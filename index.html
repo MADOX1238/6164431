@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+            margin: 0;
+        }
+        .container {
+            text-align: center;
+        }
+        input {
+            margin: 10px;
+            padding: 10px;
+            font-size: 16px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Welcome to the Chat Room</h1>
+        <input type="text" id="username" placeholder="Enter your name">
+        <button onclick="enterChat()">Enter Chat</button>
+    </div>
+    <script>
+        function enterChat() {
+            const username = document.getElementById('username').value;
+            if (username) {
+                const color = '#' + Math.floor(Math.random()*16777215).toString(16); // Generate random color
+                localStorage.setItem('username', username);
+                localStorage.setItem('color', color);
+                window.location.href = 'chat.html';
+            } else {
+                alert('Please enter a name');
+            }
+        }
+    </script>
+
+</body></html>

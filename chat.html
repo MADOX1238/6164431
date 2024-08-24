@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Room</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+        #chat-container {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+            background-color: #000;
+            color: #fff;
+        }
+        #input-container {
+            display: flex;
+            padding: 10px;
+            background-color: #333;
+        }
+        #message-input {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+        }
+        #send-button {
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            background-color: #007bff;
+            color: #fff;
+            cursor: pointer;
+        }
+        #user-list {
+            margin: 10px 0;
+            padding: 10px;
+            background-color: #222;
+            border-radius: 5px;
+        }
+        .message {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <div id="chat-container"></div>
+    <div id="input-container">
+        <input type="text" id="message-input" placeholder="Type a message">
+        <button id="send-button">Send</button>
+    </div>
+    <div id="user-list"></div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+        import { getDatabase, ref, set, onValue, remove } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-database.js";
+        
+        const firebaseConfig = {
+            apiKey: "AIzaSyDBVng_9_WkPBxN63n3ou2LD7QzPj6yoyw",
+            authDomain: "mad-321.firebaseapp.com",
+            databaseURL: "https://mad-321-default-rtdb.firebaseio.com",
+            projectId: "mad-321",
+            storageBucket: "mad-321.appspot.com",
+            messagingSenderId: "276029548481",
+            appId: "1:276029548481:web:4830f9b2e5fd5e804bf140",
+            measurementId: "G-47JBXD08PR"
+        };
+        
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+
+        const username = localStorage.getItem('username');
+        const color = localStorage.getItem('color');
+        if (!username) {
+            window.location.href = 'index.html';
+        }
+
+        const chatContainer = document.getElementById('chat-container');
+        const messageInput = document.getElementById('message-input');
+        const sendButton = document.getElementById('send-button');
+        const userList = document.getElementById('user-list');
+
+        const messagesRef = ref(database, 'messages');
+        const usersRef = ref(database, 'users');
+
+        function displayMessage(msg) {
+            const msgElement = document.createElement('div');
+            msgElement.className = 'message';
+            msgElement.innerHTML = `<span style="color: ${msg.color}">${msg.username}</span>: ${msg.text}`;
+            chatContainer.appendChild(msgElement);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        function updateUserList() {
+            onValue(usersRef, (snapshot) => {
+                userList.innerHTML = '';
+                snapshot.forEach(userSnapshot => {
+                    const userElement = document.createElement('div');
+                    userElement.textContent = userSnapshot.val().username;
+                    userList.appendChild(userElement);
+                });
+            });
+        }
+
+        sendButton.addEventListener('click', () => {
+            const messageText = messageInput.value;
+            if (messageText) {
+                set(ref(database, `messages/${Date.now()}`), {
+                    username,
+                    text: messageText,
+                    color
+                });
+                messageInput.value = '';
+            }
+        });
+
+        onValue(messagesRef, (snapshot) => {
+            chatContainer.innerHTML = '';
+            snapshot.forEach(messageSnapshot => {
+                displayMessage(messageSnapshot.val());
+            });
+        });
+
+        // Add user to Firebase with color
+        set(ref(database, `users/${username}`), {
+            username,
+            color
+        });
+
+        // Remove user from Firebase on unload
+        window.addEventListener('beforeunload', () => {
+            remove(ref(database, `users/${username}`));
+        });
+
+        updateUserList();
+    </script>
+
+</body></html>
